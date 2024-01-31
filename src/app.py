@@ -84,7 +84,7 @@ def get_favorites(id):
         result.append(favorite.serialize())
     return jsonify(result), 200
 
-#Add a new favorite planet to the current user with the planet id 
+# Add a new favorite planet to the current user with the planet id 
 @app.route('/user<int:user_id>/favorite/planet/<int:planet_id>', methods=['POST'])
 def post_planet_favorite(user_id, planet_id):
     user = Users.query.get(user_id)
@@ -93,6 +93,12 @@ def post_planet_favorite(user_id, planet_id):
         return jsonify({"message": f"user{user_id} not found"}), 404
     if planet is None:
         return jsonify({"message": "planet not found"}), 404
+    
+    # Check if the favorite already exists
+    existing_favorite = Favorites.query.filter_by(user_id=user_id, planets_id=planet_id).first()
+    if existing_favorite:
+        return jsonify({"message": "Planet already in favorites"}), 400
+
     favorite = Favorites(user_id=user.id, planets_id=planet.id)
     db.session.add(favorite)
     try:
@@ -101,7 +107,7 @@ def post_planet_favorite(user_id, planet_id):
     except Exception as error:
         return jsonify({"error": f"{error}"}), 500
 
-#Add new favorite people to the current user with the people id = people_id.
+# Add new favorite people to the current user with the people id = people_id.
 @app.route('/user<int:user_id>/favorite/people/<int:people_id>', methods=['POST'])
 def post_people_favorites(user_id, people_id):
     user = Users.query.get(user_id)
@@ -111,6 +117,11 @@ def post_people_favorites(user_id, people_id):
         return jsonify({"message": f"user{user_id} not found"}), 404
     if people is None:
         return jsonify({"message": "people not found"}), 404
+    
+    # Check if the favorite already exists
+    existing_favorite = Favorites.query.filter_by(user_id=user_id, people_id=people_id).first()
+    if existing_favorite:
+        return jsonify({"message": "People already in favorites"}), 400
     
     favorite = Favorites(user_id=user.id, people_id=people.id)
     db.session.add(favorite)
